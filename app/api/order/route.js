@@ -1,18 +1,53 @@
 import { connectDB } from "@/lib/db";
-import mongoose from "mongoose";
+import Order from "@/models/Order";
 
-export async function GET() {
+export async function POST(req) {
+  console.log("👉 Create Order API hit");
+
   try {
     await connectDB();
-console.log("conected")
-    return Response.json({
-      message: "Hello API + DB Connected ✅",
-      status: mongoose.connection.readyState
+    const body = await req.json();
+
+    const total = body.garments.reduce(
+      (sum, g) => sum + g.quantity * g.price,
+      0
+    );
+
+    const order = await Order.create({
+      ...body,
+      total,
     });
+console.log("created order")
+    return Response.json(order);
   } catch (error) {
-    return Response.json({
-      message: "DB Connection Failed ❌",
-      error: error.message
-    });
+    console.error("❌ Create Error:", error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function GET(req) {
+  console.log("👉 Get Orders API hit");
+
+  try {
+    await connectDB();
+
+    const { searchParams } = new URL(req.url);
+
+    const status = searchParams.get("status");
+    const phone = searchParams.get("phone");
+    const name = searchParams.get("name");
+
+    let query = {};
+
+    if (status) query.status = status;
+    if (phone) query.phone = phone;
+    if (name) query.customerName = { $regex: name, $options: "i" };
+
+    const orders = await Order.find(query).sort({ createdAt: -1 });
+
+    return Response.json(orders);
+  } catch (error) {
+    console.error("❌ Fetch Error:", error);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }
