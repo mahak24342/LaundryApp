@@ -4,19 +4,12 @@ import Order from "@/models/Order";
 
 export const dynamic = "force-dynamic";
 
+/* ---------------- PATCH (Update Status) ---------------- */
 export async function PATCH(req, context) {
   try {
     await connectDB();
 
-    // ✅ FIX HERE
-    const { id } = await context.params;
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing ID" },
-        { status: 400 }
-      );
-    }
+    const { id } = await context.params; // ✅ FIXED (params is async in Next.js)
 
     const body = await req.json();
 
@@ -41,9 +34,38 @@ export async function PATCH(req, context) {
     }
 
     return NextResponse.json(updated);
-
   } catch (err) {
     console.log("PATCH ERROR:", err);
+
+    return NextResponse.json(
+      { error: err.message },
+      { status: 500 }
+    );
+  }
+}
+
+/* ---------------- DELETE (Delete Order) ---------------- */
+export async function DELETE(req, context) {
+  try {
+    await connectDB();
+
+    const { id } = await context.params; // ✅ FIXED
+
+    const deleted = await Order.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Order deleted successfully",
+    });
+  } catch (err) {
+    console.log("DELETE ERROR:", err);
 
     return NextResponse.json(
       { error: err.message },
