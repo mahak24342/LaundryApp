@@ -7,6 +7,7 @@ export default function Nav({ setOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
+  // Desktop nav item
   const navItem = (href, label) => (
     <Link
       href={href}
@@ -23,11 +24,12 @@ export default function Nav({ setOpen }) {
     </Link>
   );
 
+  // Mobile nav item
   const mobileLink = (href, label) => (
     <Link
       href={href}
       onClick={() => setMenuOpen(false)}
-      className={`block px-4 py-2 rounded-lg text-sm transition ${
+      className={`block px-4 py-2 rounded-xl text-sm transition ${
         pathname === href
           ? "bg-white text-black"
           : "text-white/70 hover:bg-white/5 hover:text-white"
@@ -81,7 +83,6 @@ export default function Nav({ setOpen }) {
             >
               ☰
             </button>
-
           </div>
         </div>
       </div>
@@ -90,45 +91,69 @@ export default function Nav({ setOpen }) {
       {menuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
 
-          {/* overlay */}
+          {/* Overlay */}
           <div
             onClick={() => setMenuOpen(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md transition-opacity"
           />
 
-          {/* drawer */}
-          <div className="absolute right-0 top-0 h-full w-72 bg-[#0A0A0F] border-l border-white/10 p-6 flex flex-col">
+          {/* Drawer */}
+          <div
+            className="absolute right-0 top-0 h-full w-72 
+            bg-[#07070A]/95 backdrop-blur-2xl border-l border-white/10 
+            p-6 flex flex-col 
+            animate-[slideIn_.25s_ease-out]"
+          >
 
-            {/* HEADER */}
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-sm text-white/40">Menu</p>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-sm tracking-wide text-white/40 uppercase">
+                Menu
+              </h2>
+
               <button
                 onClick={() => setMenuOpen(false)}
-                className="text-white/50 hover:text-white"
+                className="p-2 rounded-lg hover:bg-white/10 transition"
               >
                 ✕
               </button>
             </div>
 
-            {/* LINKS */}
-            <div className="space-y-2">
+            {/* Links */}
+            <div className="space-y-1">
               {mobileLink("/", "Orders")}
               {mobileLink("/dash", "Dashboard")}
               {mobileLink("/book", "Booking")}
             </div>
 
-            {/* CREATE (also here) */}
+            {/* Divider */}
+            <div className="my-6 h-px bg-white/10" />
+
+            {/* Create Button */}
             <button
               onClick={() => {
                 setMenuOpen(false);
                 setOpen(true);
               }}
-              className="mt-auto w-full px-4 py-2 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition"
+              className="mt-auto w-full py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition"
             >
               + Create Order
             </button>
-
           </div>
+
+          {/* Animation */}
+          <style jsx>{`
+            @keyframes slideIn {
+              from {
+                transform: translateX(100%);
+                opacity: 0.5;
+              }
+              to {
+                transform: translateX(0);
+                opacity: 1;
+              }
+            }
+          `}</style>
         </div>
       )}
     </>

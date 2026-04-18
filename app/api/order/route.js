@@ -24,7 +24,6 @@ console.log("created order")
     return Response.json({ error: error.message }, { status: 500 });
   }
 }
-
 export async function GET(req) {
   console.log("👉 Get Orders API hit");
 
@@ -39,9 +38,28 @@ export async function GET(req) {
 
     let query = {};
 
-    if (status) query.status = status;
-    if (phone) query.phone = phone;
-    if (name) query.customerName = { $regex: name, $options: "i" };
+    // ✅ status filter
+    if (status) {
+      query.status = status;
+    }
+
+    // ✅ FIX: search by name OR phone (partial match)
+    if (name || phone) {
+      query.$or = [
+        {
+          customerName: {
+            $regex: name || phone || "",
+            $options: "i",
+          },
+        },
+        {
+          phone: {
+            $regex: phone || name || "",
+            $options: "i",
+          },
+        },
+      ];
+    }
 
     const orders = await Order.find(query).sort({ createdAt: -1 });
 

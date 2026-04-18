@@ -14,7 +14,8 @@ export default function Home() {
 
   const fetchOrders = async () => {
     const res = await fetch("/api/order");
-    setOrders(await res.json());
+    const data = await res.json();
+    setOrders(data);
   };
 
   useEffect(() => {
@@ -49,7 +50,10 @@ export default function Home() {
     await fetch("/api/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        status: "RECEIVED", // ensure default
+      }),
     });
 
     setForm({
@@ -65,7 +69,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#07070A] text-white">
 
-      {/* background glow */}
+      {/* Glow */}
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-8 space-y-8">
@@ -82,52 +86,59 @@ export default function Home() {
             </div>
           )}
 
-          {orders.map((o) => (
-            <div
-              key={o._id}
-              className="flex flex-col md:flex-row md:items-center justify-between gap-4
-              p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
-            >
+          {orders.map((o) => {
+            const currentStatus = (o.status || "RECEIVED").toUpperCase();
 
-              {/* LEFT */}
-              <div>
-                <p className="font-medium text-white">
-                  {o.customerName}
-                </p>
-                <p className="text-xs text-white/40">
-                  #{o._id.slice(-6).toUpperCase()}
-                </p>
+            return (
+              <div
+                key={o._id}
+                className="flex flex-col md:flex-row md:items-center justify-between gap-4
+                p-5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition"
+              >
+
+                {/* LEFT */}
+                <div>
+                  <p className="font-medium text-white">
+                    {o.customerName}
+                  </p>
+                  <p className="text-xs text-white/40">
+                    #{o._id.slice(-6).toUpperCase()}
+                  </p>
+                </div>
+
+                {/* RIGHT */}
+                <div className="flex items-center justify-between md:justify-end gap-4">
+
+                  <p className="text-emerald-400 font-semibold text-sm md:text-base">
+                    ₹{o.total}
+                  </p>
+
+                  {/* ✅ FIXED SELECT */}
+                  <select
+                    value={currentStatus}
+                    onChange={async (e) => {
+                      const newStatus = e.target.value;
+
+                      await fetch(`/api/order/${o._id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: newStatus }),
+                      });
+
+                      fetchOrders();
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white text-black outline-none"
+                  >
+                    <option value="RECEIVED">RECEIVED</option>
+                    <option value="PROCESSING">PROCESSING</option>
+                    <option value="READY">READY</option>
+                    <option value="DELIVERED">DELIVERED</option>
+                  </select>
+
+                </div>
               </div>
-
-              {/* RIGHT */}
-              <div className="flex items-center justify-between md:justify-end gap-4">
-
-                <p className="text-emerald-400 font-semibold text-sm md:text-base">
-                  ₹{o.total}
-                </p>
-
-                {/* ✅ FIXED SELECT */}
-                <select
-                  value={o.status}
-                  onChange={async (e) => {
-                    await fetch(`/api/order/${o._id}`, {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ status: e.target.value }),
-                    });
-                    fetchOrders();
-                  }}
-                  className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white text-black outline-none"
-                >
-                  <option className="text-black">RECEIVED</option>
-                  <option className="text-black">PROCESSING</option>
-                  <option className="text-black">READY</option>
-                  <option className="text-black">DELIVERED</option>
-                </select>
-
-              </div>
-            </div>
-          ))}
+            );
+          })}
 
         </div>
       </div>
