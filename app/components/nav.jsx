@@ -1,159 +1,129 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Nav({ setOpen }) {
+export default function Nav({ setOpen = () => {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // Desktop nav item
-  const navItem = (href, label) => (
-    <Link
-      href={href}
-      className={`relative px-4 py-2 text-sm rounded-lg transition ${
-        pathname === href
-          ? "text-white"
-          : "text-white/50 hover:text-white"
-      }`}
-    >
-      {label}
-      {pathname === href && (
-        <span className="absolute left-1/2 -bottom-1 h-[2px] w-4/5 -translate-x-1/2 bg-white rounded-full" />
-      )}
-    </Link>
-  );
+  const links = [
+    { href: "/", label: "Orders" },
+    { href: "/dash", label: "Dashboard" },
+    { href: "/orders", label: "Bookings" },
+  ];
 
-  // Mobile nav item
-  const mobileLink = (href, label) => (
-    <Link
-      href={href}
-      onClick={() => setMenuOpen(false)}
-      className={`block px-4 py-2 rounded-xl text-sm transition ${
-        pathname === href
-          ? "bg-white text-black"
-          : "text-white/70 hover:bg-white/5 hover:text-white"
-      }`}
-    >
-      {label}
-    </Link>
-  );
+  const isActive = (href) => pathname === href;
 
   return (
     <>
       {/* NAVBAR */}
-      <div className="sticky top-0 z-40 backdrop-blur-xl bg-black/30 border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 h-16 flex items-center justify-between">
 
           {/* LOGO */}
-          <h1 className="text-xl md:text-2xl font-semibold tracking-tight">
-            Laundry OS
-          </h1>
+          <Link href="/" className="text-white font-bold text-lg tracking-wide">
+            Laundry<span className="text-white/60">OS</span>
+          </Link>
 
           {/* DESKTOP NAV */}
-          <div className="hidden md:flex items-center gap-6">
-            {navItem("/", "Orders")}
-            {navItem("/dash", "Dashboard")}
-            {navItem("/book", "Booking")}
-          </div>
+          <nav className="hidden md:flex items-center gap-8">
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`text-sm transition ${
+                  isActive(l.href)
+                    ? "text-white"
+                    : "text-white/50 hover:text-white"
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
 
-          {/* RIGHT SIDE */}
-          <div className="flex items-center gap-2">
+          {/* ACTIONS */}
+          <div className="flex items-center gap-3">
 
-            {/* MOBILE CREATE */}
+            {/* CREATE BUTTON */}
             <button
               onClick={() => setOpen(true)}
-              className="md:hidden px-3 py-1.5 text-sm rounded-lg bg-white text-black font-medium"
+              className="bg-white text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/90 transition"
             >
               + Create
             </button>
 
-            {/* DESKTOP CREATE */}
-            <button
-              onClick={() => setOpen(true)}
-              className="hidden md:block px-4 py-2 rounded-xl bg-white text-black text-sm font-medium hover:bg-white/90 transition"
-            >
-              + Create
-            </button>
-
-            {/* MENU ICON */}
+            {/* MOBILE MENU BUTTON */}
             <button
               onClick={() => setMenuOpen(true)}
-              className="md:hidden p-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition"
+              className="md:hidden text-white text-2xl px-2"
             >
               ☰
             </button>
+
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* MOBILE DRAWER */}
+      {/* MOBILE MENU OVERLAY */}
       {menuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
 
-          {/* Overlay */}
+          {/* BACKDROP */}
           <div
             onClick={() => setMenuOpen(false)}
-            className="absolute inset-0 bg-black/70 backdrop-blur-md transition-opacity"
+            className="absolute inset-0 bg-black/70"
           />
 
-          {/* Drawer */}
-          <div
-            className="absolute right-0 top-0 h-full w-72 
-            bg-[#07070A]/95 backdrop-blur-2xl border-l border-white/10 
-            p-6 flex flex-col 
-            animate-[slideIn_.25s_ease-out]"
-          >
+          {/* DRAWER */}
+          <div className="absolute right-0 top-0 h-full w-72 bg-[#0B0B0F] border-l border-white/10 p-6 flex flex-col">
 
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-sm tracking-wide text-white/40 uppercase">
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-white/50 text-xs uppercase tracking-widest">
                 Menu
               </h2>
 
               <button
                 onClick={() => setMenuOpen(false)}
-                className="p-2 rounded-lg hover:bg-white/10 transition"
+                className="text-white text-xl"
               >
                 ✕
               </button>
             </div>
 
-            {/* Links */}
-            <div className="space-y-1">
-              {mobileLink("/", "Orders")}
-              {mobileLink("/dash", "Dashboard")}
-              {mobileLink("/book", "Booking")}
+            {/* LINKS */}
+            <div className="flex flex-col gap-3">
+              {links.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`px-3 py-2 rounded-lg text-sm transition ${
+                    isActive(l.href)
+                      ? "bg-white text-black"
+                      : "text-white/70 hover:bg-white/10"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              ))}
             </div>
 
-            {/* Divider */}
-            <div className="my-6 h-px bg-white/10" />
-
-            {/* Create Button */}
+            {/* FOOTER BUTTON */}
             <button
               onClick={() => {
                 setMenuOpen(false);
                 setOpen(true);
               }}
-              className="mt-auto w-full py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition"
+              className="mt-auto bg-white text-black py-3 rounded-xl font-medium hover:bg-white/90 transition"
             >
               + Create Order
             </button>
-          </div>
 
-          {/* Animation */}
-          <style jsx>{`
-            @keyframes slideIn {
-              from {
-                transform: translateX(100%);
-                opacity: 0.5;
-              }
-              to {
-                transform: translateX(0);
-                opacity: 1;
-              }
-            }
-          `}</style>
+          </div>
         </div>
       )}
     </>

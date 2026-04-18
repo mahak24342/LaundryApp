@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Nav from "../components/nav";
+import Footer from "../components/Footer";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -134,6 +135,7 @@ export default function OrdersPage() {
           ))}
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Nav from "./components/nav";
+import Footer from "./components/Footer";
 
 export default function Home() {
   const [form, setForm] = useState({
@@ -15,7 +17,7 @@ export default function Home() {
   const fetchOrders = async () => {
     const res = await fetch("/api/order");
     const data = await res.json();
-    setOrders(data);
+    setOrders(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function Home() {
   };
 
   const total = form.garments.reduce(
-    (sum, g) => sum + g.quantity * g.price,
+    (sum, g) => sum + (Number(g.quantity) || 0) * (Number(g.price) || 0),
     0
   );
 
@@ -52,7 +54,7 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...form,
-        status: "RECEIVED", // ensure default
+        status: "RECEIVED",
       }),
     });
 
@@ -69,13 +71,39 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#07070A] text-white">
 
-      {/* Glow */}
+      {/* BACKGROUND GLOW */}
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_55%)] pointer-events-none" />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-8 space-y-8">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-6 space-y-10">
 
         {/* NAV */}
         <Nav setOpen={setOpen} />
+
+        {/* HERO SECTION */}
+        <div className="space-y-3 pt-4">
+
+          <h1 className="text-2xl md:text-4xl font-semibold tracking-tight">
+            Manage Laundry Orders Effortlessly
+          </h1>
+
+          <p className="text-white/50 text-sm md:text-base max-w-2xl">
+            Create, track, and update laundry orders in real-time with a simple and clean dashboard.
+          </p>
+
+          {/* TAGS */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            <span className="px-3 py-1 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
+              Fast Tracking
+            </span>
+            <span className="px-3 py-1 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
+              Live Status Updates
+            </span>
+            <span className="px-3 py-1 text-xs rounded-full bg-white/5 border border-white/10 text-white/60">
+              Simple Dashboard
+            </span>
+          </div>
+
+        </div>
 
         {/* ORDERS */}
         <div className="space-y-3">
@@ -109,25 +137,22 @@ export default function Home() {
                 {/* RIGHT */}
                 <div className="flex items-center justify-between md:justify-end gap-4">
 
-                  <p className="text-emerald-400 font-semibold text-sm md:text-base">
+                  <p className="text-emerald-400 font-semibold">
                     ₹{o.total}
                   </p>
 
-                  {/* ✅ FIXED SELECT */}
                   <select
                     value={currentStatus}
                     onChange={async (e) => {
-                      const newStatus = e.target.value;
-
                       await fetch(`/api/order/${o._id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ status: newStatus }),
+                        body: JSON.stringify({ status: e.target.value }),
                       });
 
                       fetchOrders();
                     }}
-                    className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white text-black outline-none"
+                    className="text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white text-black"
                   >
                     <option value="RECEIVED">RECEIVED</option>
                     <option value="PROCESSING">PROCESSING</option>
@@ -147,20 +172,14 @@ export default function Home() {
       {open && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
 
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0A0A0F] p-6 space-y-5 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0A0A0F] p-6 space-y-5">
 
             {/* HEADER */}
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">Create Order</h2>
-              <button
-                onClick={() => setOpen(false)}
-                className="text-white/40 hover:text-white"
-              >
-                ✕
-              </button>
+              <button onClick={() => setOpen(false)}>✕</button>
             </div>
 
-            {/* FORM */}
             <form onSubmit={handleSubmit} className="space-y-4">
 
               <input
@@ -168,7 +187,7 @@ export default function Home() {
                 placeholder="Customer Name"
                 value={form.customerName}
                 onChange={handleChange}
-                className="w-full p-3 rounded-xl bg-white/5 border border-white/10 focus:border-white/30 outline-none"
+                className="w-full p-3 rounded-xl bg-white/5 border border-white/10"
               />
 
               <input
@@ -176,13 +195,15 @@ export default function Home() {
                 placeholder="Phone"
                 value={form.phone}
                 onChange={handleChange}
-                className="w-full p-3 rounded-xl bg-white/5 border border-white/10 focus:border-white/30 outline-none"
+                className="w-full p-3 rounded-xl bg-white/5 border border-white/10"
               />
 
               {/* GARMENTS */}
               <div className="space-y-2">
+
                 {form.garments.map((g, i) => (
                   <div key={i} className="grid grid-cols-3 gap-2">
+
                     <input
                       placeholder="Type"
                       value={g.type}
@@ -191,6 +212,7 @@ export default function Home() {
                       }
                       className="p-2 rounded-lg bg-white/5 border border-white/10 text-sm"
                     />
+
                     <input
                       type="number"
                       placeholder="Qty"
@@ -200,6 +222,7 @@ export default function Home() {
                       }
                       className="p-2 rounded-lg bg-white/5 border border-white/10 text-sm"
                     />
+
                     <input
                       type="number"
                       placeholder="Price"
@@ -209,20 +232,22 @@ export default function Home() {
                       }
                       className="p-2 rounded-lg bg-white/5 border border-white/10 text-sm"
                     />
+
                   </div>
                 ))}
 
                 <button
                   type="button"
                   onClick={addGarment}
-                  className="text-sm text-white/60 hover:text-white"
+                  className="text-sm text-white/60"
                 >
                   + Add garment
                 </button>
+
               </div>
 
               {/* TOTAL */}
-              <div className="flex justify-between text-sm text-white/50 pt-2">
+              <div className="flex justify-between text-sm text-white/50">
                 <span>Total</span>
                 <span className="text-emerald-400 font-semibold">
                   ₹{total}
@@ -230,7 +255,7 @@ export default function Home() {
               </div>
 
               {/* SUBMIT */}
-              <button className="w-full py-3 rounded-xl bg-white text-black font-medium hover:bg-white/90 transition">
+              <button className="w-full py-3 rounded-xl bg-white text-black font-medium">
                 Create Order
               </button>
 
@@ -238,6 +263,7 @@ export default function Home() {
           </div>
         </div>
       )}
+       <Footer/>
     </div>
   );
 }

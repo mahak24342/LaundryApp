@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Nav from "../components/nav";
+import Footer from "../components/Footer";
 
 export default function Page() {
   const [data, setData] = useState(null);
@@ -152,6 +153,7 @@ export default function Page() {
         </div>
 
       </div>
+      <Footer/>
     </div>
   );
 }
